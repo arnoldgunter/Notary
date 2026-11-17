@@ -16,44 +16,6 @@ Notary is built for focused, everyday work:
 
 ---
 
-## Screenshots
-
-### 1) Explorer & Notebook Management
-
-![Notebook Explorer](public/screenshot_1.png)
-
-Initial Notebook Explorer state on first app launch, guiding the user to create the first notebook and start adding notes.
-
-![Notebook Context Actions](public/screenshot_2.png)
-
-Notebook overview in grid layout, highlighting the folder-card design and visual clarity.
-
-### 2) Daily Note Workflow
-
-![Note List Overlay](public/screenshot_3.png)
-
-Detailed list view for notebooks, including metadata and sorting workflow.
-
-![Create Note Dialog](public/screenshot_4.png)
-
-Notes overlay for a selected notebook, where users can create, open, and browse notebook-specific notes.
-
-### 3) Editor Experience
-
-![Rich Text Editing](public/screenshot_5.png)
-
-Rich-text (Markdown-style) editor capabilities in dark mode using general lorem ipsum content.
-
-![Formatting and Content Tools](public/screenshot_6.png)
-
-"Show important only" mode in action for focused reading of highlighted important content.
-
-![Focused Writing View](public/screenshot_7.png)
-
-Editor in light mode, demonstrating the built-in light/dark theme toggle.
-
----
-
 ## Feature Breakdown
 
 ### Notebook Explorer
@@ -193,7 +155,7 @@ npm run tauri build
 - `src/components/tiptap-templates/simple/simple-editor.jsx` – editor template
 - `src/lib/db.js` – SQLite CRUD + data access layer
 - `src-tauri/` – Tauri/Rust configuration and native runtime
-- `public/` – static assets and screenshots
+- `public/` – static application assets
 
 ---
 
