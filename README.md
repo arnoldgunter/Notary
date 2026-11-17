@@ -139,6 +139,24 @@ Official Tauri documentation:
 npm install
 ```
 
+### Google Drive konfigurieren
+
+Für Google-Drive-Backups muss in der Google Cloud Console die Google-Drive-API
+aktiviert und eine OAuth-Client-ID für eine Desktop-/öffentliche Anwendung
+angelegt werden. Die Client-ID wird als Vite-Variable gesetzt:
+
+```bash
+VITE_GOOGLE_CLIENT_ID=<Google-Client-ID> \
+VITE_GOOGLE_CLIENT_SECRET=<Google-Client-Secret> \
+npm run dev
+```
+
+Beim Verbinden meldet sich jeder Benutzer mit seinem eigenen Google-Konto an.
+Bei einem OAuth-Webclient muss zusätzlich das Client-Secret gesetzt werden.
+Notary verwendet Google Drive ausschließlich als Backup-Ziel. Die lokale
+SQLite-Datenbank bleibt die Single Source of Truth; ein Import ersetzt sie
+erst nach erfolgreicher Validierung als SQLite-Datei.
+
 ### Development
 
 Frontend only (Vite):

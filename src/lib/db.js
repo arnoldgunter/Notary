@@ -1,4 +1,5 @@
 import Database from "@tauri-apps/plugin-sql";
+import { invoke } from "@tauri-apps/api/core";
 
 let db = null;
 
@@ -30,6 +31,31 @@ export async function initDB() {
   `);
 
   return db;
+}
+
+export async function closeDB() {
+  if (!db) return;
+  await db.close();
+  db = null;
+}
+
+export async function readDatabase() {
+  await closeDB();
+  try {
+    return await invoke("read_database");
+  } finally {
+    await initDB();
+  }
+}
+
+export async function getDatabasePath() {
+  return invoke("get_database_path");
+}
+
+export async function replaceDatabase(bytes) {
+  await closeDB();
+  await invoke("replace_database", { bytes: Array.from(bytes) });
+  await initDB();
 }
 
 export async function addNotebook(name) {

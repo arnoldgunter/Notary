@@ -1,0 +1,160 @@
+.backup-widget {
+  position: relative;
+  z-index: 300;
+  font-size: 0.9rem;
+}
+
+.backup-trigger,
+.backup-popover button {
+  border: 0;
+  font: inherit;
+}
+
+.backup-trigger {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}
+
+.backup-trigger:hover,
+.backup-trigger.is-open {
+  color: #f24f00;
+  background: transparent;
+}
+
+.backup-popover {
+  position: absolute;
+  top: 2.75rem;
+  right: 0;
+  z-index: 40;
+  width: min(30rem, calc(100vw - 2rem));
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  color: #f0f0f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(36, 36, 36, 0.96);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 22%);
+}
+
+.backup-popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.backup-popover-header div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.backup-popover-header span,
+.backup-hint,
+.backup-message {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+}
+
+.backup-popover-header button {
+  display: grid;
+  padding: 0.15rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  background: transparent;
+}
+
+.backup-database-path {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 0.85rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+}
+
+.backup-database-path code {
+  overflow-wrap: anywhere;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.backup-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.75rem;
+  color: #f0f0f0;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.backup-action + .backup-action {
+  margin-top: 0.45rem;
+}
+
+.backup-action:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.backup-action-primary {
+  color: #fff;
+  background: #f24f00;
+}
+
+.backup-action-primary:hover {
+  background: #d94300;
+}
+
+.backup-action-local {
+  margin-top: 0.85rem;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.78);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.backup-link {
+  margin-top: 0.8rem;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+  background: transparent;
+  font-size: 0.78rem !important;
+}
+
+.backup-hint,
+.backup-message {
+  margin-top: 0.65rem;
+}
+
+.backup-message {
+  color: #ff9a72;
+}
+
+.backup-action:disabled,
+.backup-link:disabled,
+.backup-trigger:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+@media (max-width: 640px) {
+  .backup-popover {
+    position: fixed;
+    top: 3.5rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+  }
+}

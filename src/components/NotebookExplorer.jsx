@@ -32,6 +32,7 @@ export default function NotebookExplorer({
   updateNotebook,
   setSelectedNote,
   init,
+  cloudBackup,
 }) {
   const [showAddNotebook, setShowAddNotebook] = useState(false);
   const [showNewNote, setShowNewNote] = useState(false);
@@ -44,6 +45,7 @@ export default function NotebookExplorer({
   const [sortBy, setSortBy] = useState("created_at");
   const [noteContextVisible, setNoteContextVisible] = useState(null);
   const [noteContextId, setNoteContextId] = useState(null);
+  const [pendingDeleteNotebookId, setPendingDeleteNotebookId] = useState(null);
 
   const dialogRef = useRef(null);
   const noteContextMenuRef = useRef(null);
@@ -150,8 +152,9 @@ export default function NotebookExplorer({
       )}
 
       {/* TOOLBAR */}
-      {notebooks.length > 0 && (
-        <div className={styles.toolBar}>
+      <div className={styles.toolBar}>
+        {notebooks.length > 0 && (
+          <>
           <FolderSimplePlusIcon
             size={24}
             className={styles.toolBarIcon}
@@ -188,8 +191,10 @@ export default function NotebookExplorer({
             className={styles.toolBarIcon}
             onClick={() => setSearchBarVisible(true)}
           />
-        </div>
-      )}
+          </>
+        )}
+        {cloudBackup}
+      </div>
 
       {/* SORT DIALOG */}
       {sortDialogVisible && (
@@ -425,16 +430,48 @@ export default function NotebookExplorer({
             <p
               onClick={() => {
                 if (!notebookContextId) return;
-
-                if (window.confirm("Delete this notebook and all its notes?")) {
-                  deleteNotebook(notebookContextId);
-                }
-
                 setFolderContextVisible(null);
+                setPendingDeleteNotebookId(notebookContextId);
               }}
             >
               <TrashIcon size={24} /> Delete
             </p>
+          </div>
+        </div>
+      )}
+
+      {pendingDeleteNotebookId && (
+        <div
+          className={styles.overlay}
+          onClick={() => setPendingDeleteNotebookId(null)}
+        >
+          <div
+            ref={dialogRef}
+            className={styles.addNotebookDialog}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Delete notebook?</h2>
+            <p>This will permanently delete the notebook and all its notes.</p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setPendingDeleteNotebookId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.deleteButton}
+                onClick={async () => {
+                  const notebookId = pendingDeleteNotebookId;
+                  setPendingDeleteNotebookId(null);
+                  await deleteNotebook(notebookId);
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

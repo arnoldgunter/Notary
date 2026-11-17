@@ -211,6 +211,30 @@
     cursor: pointer;
 }
 
+.confirmActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.cancelButton,
+.deleteButton {
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+}
+
+.cancelButton {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.deleteButton {
+    color: #fff;
+    background: #dc2626;
+}
+
 .addNotebookIcon {
     background: transparent;
 }

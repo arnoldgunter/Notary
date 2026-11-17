@@ -13,6 +13,7 @@ import {
 } from "./lib/db";
 import "./App.css";
 import { XIcon } from "@phosphor-icons/react";
+import BackupPopover from "./components/BackupPopover";
 
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 
@@ -71,6 +72,13 @@ function App() {
     if (!notebookId) return;
     const n = await getNotes(notebookId);
     setNotes(n);
+  };
+
+  const handleDatabaseChanged = async () => {
+    setSelectedNotebook(null);
+    setSelectedNote(null);
+    setNotes([]);
+    await loadNotebooks();
   };
 
   const handleAddNotebook = async () => {
@@ -151,6 +159,7 @@ function App() {
           selectedNote={selectedNote}
           setSelectedNote={setSelectedNote}
           init={init}
+          cloudBackup={<BackupPopover onDatabaseChanged={handleDatabaseChanged} />}
         />
       </div>
     );
