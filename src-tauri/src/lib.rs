@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use rusqlite::Connection;
 use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -41,7 +42,37 @@ fn replace_database(app: tauri::AppHandle, bytes: Vec<u8>) -> Result<(), String>
     fs::create_dir_all(parent)
         .map_err(|error| format!("Datenbankverzeichnis konnte nicht erstellt werden: {error}"))?;
 
-    let temporary_path = parent.join("notes.db.importing");
+      let validation_path = parent.join("notes.db.validation");
+      fs::write(&validation_path, &bytes)
+          .map_err(|error| format!("Importdatei konnte nicht geprüft werden: {error}"))?;
+      let validation_result = (|| -> Result<(), String> {
+          let connection = Connection::open(&validation_path)
+              .map_err(|error| format!("SQLite-Datenbank konnte nicht geöffnet werden: {error}"))?;
+          let integrity: String = connection
+              .query_row("PRAGMA integrity_check", [], |row| row.get(0))
+              .map_err(|error| format!("SQLite-Integritätsprüfung fehlgeschlagen: {error}"))?;
+          if integrity != "ok" {
+              return Err(format!("SQLite-Integritätsprüfung fehlgeschlagen: {integrity}"));
+          }
+
+          for table in ["notebooks", "notes"] {
+              let exists: bool = connection
+                  .query_row(
+                      "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1)",
+                      [table],
+                      |row| row.get(0),
+                  )
+                  .map_err(|error| format!("Datenbankschema konnte nicht geprüft werden: {error}"))?;
+              if !exists {
+                  return Err(format!("Importdatei enthält nicht die benötigte Tabelle '{table}'."));
+              }
+          }
+          Ok(())
+      })();
+      let _ = fs::remove_file(&validation_path);
+      validation_result?;
+
+      let temporary_path = parent.join("notes.db.importing");
     fs::write(&temporary_path, bytes)
         .map_err(|error| format!("Importdatei konnte nicht geschrieben werden: {error}"))?;
     fs::rename(&temporary_path, &path).map_err(|error| {

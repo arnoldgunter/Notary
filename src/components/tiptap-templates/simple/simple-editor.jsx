@@ -221,13 +221,7 @@ export function SimpleEditor({ note, onUpdate }) {
       saveTimeout.current = setTimeout(() => {
         if (!note) return;
 
-        let existing = {};
-        try {
-          existing = JSON.parse(note.content || "{}");
-        } catch {}
-
-        const updated = { ...existing, content: json };
-        onUpdate(JSON.stringify(updated));
+        onUpdate(JSON.stringify(json));
       }, 1000);
     },
   });

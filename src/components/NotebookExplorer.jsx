@@ -155,42 +155,60 @@ export default function NotebookExplorer({
       <div className={styles.toolBar}>
         {notebooks.length > 0 && (
           <>
-          <FolderSimplePlusIcon
-            size={24}
+          <button
+            type="button"
             className={styles.toolBarIcon}
+            aria-label="Create notebook"
             onClick={() => setShowAddNotebook(true)}
-          />
-          <FunnelSimpleIcon
-            size={24}
+          >
+            <FolderSimplePlusIcon size={24} />
+          </button>
+          <button
+            type="button"
             className={styles.toolBarIcon}
+            aria-label="Sort notebooks"
             onClick={() => setSortDialogVisible(true)}
-          />
+          >
+            <FunnelSimpleIcon size={24} />
+          </button>
 
           {displayType === "grid" ? (
-            <ListIcon
-              size={24}
+            <button
+              type="button"
               className={styles.toolBarIcon}
+              aria-label="Show notebooks as list"
               onClick={() => setDisplayType("list")}
-            />
+            >
+              <ListIcon size={24} />
+            </button>
           ) : (
-            <SquaresFourIcon
-              size={24}
+            <button
+              type="button"
               className={styles.toolBarIcon}
+              aria-label="Show notebooks as grid"
               onClick={() => setDisplayType("grid")}
-            />
+            >
+              <SquaresFourIcon size={24} />
+            </button>
           )}
 
-          <ArrowsClockwiseIcon
-            size={24}
+          <button
+            type="button"
             className={styles.toolBarIcon}
+            aria-label="Reload notebooks"
             onClick={init}
-          />
+          >
+            <ArrowsClockwiseIcon size={24} />
+          </button>
 
-          <MagnifyingGlassIcon
-            size={24}
+          <button
+            type="button"
             className={styles.toolBarIcon}
+            aria-label="Search notebooks"
             onClick={() => setSearchBarVisible(true)}
-          />
+          >
+            <MagnifyingGlassIcon size={24} />
+          </button>
           </>
         )}
         {cloudBackup}
@@ -199,7 +217,7 @@ export default function NotebookExplorer({
       {/* SORT DIALOG */}
       {sortDialogVisible && (
         <div className={styles.sortDialog} ref={dialogRef}>
-          <span onClick={() => setSortBy("name")}>
+          <button type="button" onClick={() => setSortBy("name")}>
             <input
               type="radio"
               name="sortBy"
@@ -208,8 +226,8 @@ export default function NotebookExplorer({
               onChange={() => setSortBy("name")}
             />
             <p>Name (A-Z)</p>
-          </span>
-          <span onClick={() => setSortBy("created_at")}>
+          </button>
+          <button type="button" onClick={() => setSortBy("created_at")}>
             <input
               type="radio"
               name="sortBy"
@@ -218,7 +236,7 @@ export default function NotebookExplorer({
               onChange={() => setSortBy("created_at")}
             />
             <p>Created At (Newest First)</p>
-          </span>
+          </button>
         </div>
       )}
 
@@ -232,14 +250,17 @@ export default function NotebookExplorer({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <XIcon
-            size={32}
+          <button
+            type="button"
             className={styles.closeIcon}
+            aria-label="Close search"
             onClick={() => {
               setSearchBarVisible(false);
               setSearchTerm("");
             }}
-          />
+          >
+            <XIcon size={32} />
+          </button>
         </div>
       )}
 
@@ -258,38 +279,21 @@ export default function NotebookExplorer({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <p
+            <button
+              type="button"
               onClick={async () => {
                 if (!noteContextId) return;
 
                 const note = notes.find((n) => n.id === noteContextId);
                 if (!note) return;
 
-                let parsedContent;
-                try {
-                  parsedContent = JSON.parse(note.content);
-                } catch {
-                  parsedContent = {
-                    name: "Untitled",
-                    content: {
-                      type: "doc",
-                      content: [],
-                    },
-                  };
-                }
-
                 const newName = window.prompt(
                   "Enter new note title:",
-                  parsedContent.name || "Untitled",
+                  note.name || "Untitled",
                 );
 
                 if (newName?.trim()) {
-                  const updatedContent = {
-                    ...parsedContent,
-                    name: newName.trim(),
-                  };
-
-                  await updateNote(noteContextId, updatedContent);
+                  await updateNote(noteContextId, { name: newName.trim() });
                   await loadNotes(selectedNotebook);
                 }
 
@@ -297,9 +301,10 @@ export default function NotebookExplorer({
               }}
             >
               <PencilSimpleIcon size={24} /> Rename
-            </p>
+            </button>
 
-            <p
+            <button
+              type="button"
               onClick={async () => {
                 if (!noteContextId) return;
 
@@ -311,7 +316,7 @@ export default function NotebookExplorer({
               }}
             >
               <TrashIcon size={24} /> Delete
-            </p>
+            </button>
           </div>
         </div>
       )}
@@ -347,13 +352,14 @@ export default function NotebookExplorer({
                 </button>
               </div>
             ) : (
-              <div
+              <button
+                type="button"
                 className={styles.newNoteItem}
                 onClick={() => setShowNewNote(true)}
               >
                 <img src="/new.svg" alt="New Note" />
                 New Note
-              </div>
+              </button>
             )}
 
             {notes.length === 0 ? (
@@ -363,7 +369,8 @@ export default function NotebookExplorer({
             ) : (
               <div className={styles.notesContainer}>
                 {notes.map((note) => (
-                  <div
+                  <button
+                    type="button"
                     key={note.id}
                     className={styles.noteItem}
                     onClick={() => setSelectedNote(note)}
@@ -376,8 +383,7 @@ export default function NotebookExplorer({
                     <img src="/note.svg" alt="Note" />
                     {(() => {
                       try {
-                        const parsed = JSON.parse(note.content);
-                        const name = parsed.name || "Untitled";
+                        const name = note.name || "Untitled";
                         return name.length > 25
                           ? name.slice(0, 25) + "..."
                           : name;
@@ -385,7 +391,7 @@ export default function NotebookExplorer({
                         return "Untitled";
                       }
                     })()}
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -407,7 +413,8 @@ export default function NotebookExplorer({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <p
+            <button
+              type="button"
               onClick={() => {
                 if (!notebookContextId) return;
 
@@ -425,9 +432,10 @@ export default function NotebookExplorer({
               }}
             >
               <PencilSimpleIcon size={24} /> Rename
-            </p>
+            </button>
 
-            <p
+            <button
+              type="button"
               onClick={() => {
                 if (!notebookContextId) return;
                 setFolderContextVisible(null);
@@ -435,7 +443,7 @@ export default function NotebookExplorer({
               }}
             >
               <TrashIcon size={24} /> Delete
-            </p>
+            </button>
           </div>
         </div>
       )}
@@ -482,6 +490,8 @@ export default function NotebookExplorer({
           <li
             key={nb.id}
             className={styles.notebookItem}
+            tabIndex={0}
+            role="button"
             onContextMenu={(e) => {
               e.preventDefault();
               setNotebookContextId(nb.id);
@@ -490,6 +500,13 @@ export default function NotebookExplorer({
             onClick={() => {
               setSelectedNotebook(nb.id);
               loadNotes(nb.id);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setSelectedNotebook(nb.id);
+                loadNotes(nb.id);
+              }
             }}
           >
             <span>

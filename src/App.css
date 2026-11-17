@@ -64,6 +64,11 @@ body {
 .closeNoteBtn {
     cursor: pointer;
     margin-right: 1rem;
+    color: inherit;
+    border: 0;
+    background: transparent;
+    display: grid;
+    place-items: center;
 }
 
 @media (min-width: 640px) {

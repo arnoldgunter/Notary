@@ -30,6 +30,23 @@ export async function initDB() {
     )
   `);
 
+  // Migrate the former { name, content } note payload to the normalized schema.
+  await db.execute(`
+    UPDATE notes
+    SET
+      name = COALESCE(NULLIF(json_extract(content, '$.name'), ''), name),
+      content = json_extract(content, '$.content')
+    WHERE json_valid(content)
+      AND json_type(content, '$.content') = 'object'
+      AND json_type(content, '$.content.type') = 'text'
+  `);
+  await db.execute(`
+    UPDATE notebooks
+    SET notes_count = (
+      SELECT COUNT(*) FROM notes WHERE notes.notebook_id = notebooks.id
+    )
+  `);
+
   return db;
 }
 
@@ -54,8 +71,11 @@ export async function getDatabasePath() {
 
 export async function replaceDatabase(bytes) {
   await closeDB();
-  await invoke("replace_database", { bytes: Array.from(bytes) });
-  await initDB();
+  try {
+    await invoke("replace_database", { bytes: Array.from(bytes) });
+  } finally {
+    await initDB();
+  }
 }
 
 export async function addNotebook(name) {
@@ -77,7 +97,7 @@ export async function addNote(notebookId, content, important = false) {
   const database = await initDB();
   await database.execute(
     "INSERT INTO notes (notebook_id, name, content, important) VALUES ($1, $2, $3, $4)",
-    [notebookId, content.name, JSON.stringify(content), important ? 1 : 0],
+    [notebookId, content.name, JSON.stringify(content.content), important ? 1 : 0],
   );
   await database.execute(
     "UPDATE notebooks SET notes_count = notes_count + 1 WHERE id = $1",
@@ -104,10 +124,17 @@ export async function getNoteById(noteId) {
 
 export async function deleteNote(noteId) {
   const database = await initDB();
+  const result = await database.select(
+    "SELECT notebook_id FROM notes WHERE id = $1",
+    [noteId],
+  );
+  const notebookId = result?.[0]?.notebook_id;
+  if (!notebookId) return;
+
   await database.execute("DELETE FROM notes WHERE id = $1", [noteId]);
   await database.execute(
-    "UPDATE notebooks SET notes_count = notes_count - 1 WHERE id = (SELECT notebook_id FROM notes WHERE id = $1)",
-    [noteId],
+    "UPDATE notebooks SET notes_count = MAX(0, notes_count - 1) WHERE id = $1",
+    [notebookId],
   );
 }
 
@@ -121,10 +148,30 @@ export async function deleteNotebook(notebookId) {
 
 export async function updateNote(noteId, content, important = 0) {
   const database = await initDB();
+  const serializedContent =
+    typeof content === "string" ? JSON.parse(content) : content;
+  const noteName = serializedContent?.name;
+  const noteContent = serializedContent?.content ?? serializedContent;
+
+  if (typeof noteName === "string" && !serializedContent?.content) {
+    await database.execute("UPDATE notes SET name = $1 WHERE id = $2", [
+      noteName,
+      noteId,
+    ]);
+    return;
+  }
+
+  if (typeof noteName === "string") {
+    await database.execute(
+      "UPDATE notes SET name = $1, content = $2, important = $3 WHERE id = $4",
+      [noteName, JSON.stringify(noteContent), important ? 1 : 0, noteId],
+    );
+    return;
+  }
 
   await database.execute(
     "UPDATE notes SET content = $1, important = $2 WHERE id = $3",
-    [content, important ? 1 : 0, noteId],
+    [JSON.stringify(noteContent), important ? 1 : 0, noteId],
   );
 }
 

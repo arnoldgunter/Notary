@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import {
   initDB,
   addNotebook,
@@ -13,15 +13,20 @@ import {
 } from "./lib/db";
 import "./App.css";
 import { XIcon } from "@phosphor-icons/react";
-import BackupPopover from "./components/BackupPopover";
-
-import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
-
 import Splash from "./components/splash";
 import NotebookExplorer from "./components/NotebookExplorer";
 
+const BackupPopover = lazy(() => import("./components/BackupPopover"));
+const SimpleEditor = lazy(() =>
+  import("@/components/tiptap-templates/simple/simple-editor").then((module) => ({
+    default: module.SimpleEditor,
+  })),
+);
+
 function App() {
   const [loading, setLoading] = useState(true);
+  const [initializationError, setInitializationError] = useState(null);
+  const [initialized, setInitialized] = useState(false);
   const [notebooks, setNotebooks] = useState([]);
   const [selectedNotebook, setSelectedNotebook] = useState(null);
   const [selectedNote, setSelectedNote] = useState(null);
@@ -30,20 +35,29 @@ function App() {
   const [notes, setNotes] = useState([]);
 
   useEffect(() => {
+    if (!initialized) return;
     const saved = localStorage.getItem("selectedNoteId");
     if (saved) {
       try {
         const noteId = JSON.parse(saved);
 
         const fetchNote = async () => {
-          const note = await getNoteById(noteId);
-          if (note) setSelectedNote(note);
+          try {
+            const note = await getNoteById(noteId);
+            if (note) setSelectedNote(note);
+          } catch (error) {
+            console.error("Failed to restore selected note:", error);
+            localStorage.removeItem("selectedNoteId");
+          }
         };
 
         fetchNote();
-      } catch {}
+      } catch (error) {
+        console.warn("Invalid saved note selection:", error);
+        localStorage.removeItem("selectedNoteId");
+      }
     }
-  }, []);
+  }, [initialized]);
 
   useEffect(() => {
     if (selectedNote) {
@@ -54,9 +68,22 @@ function App() {
   }, [selectedNote?.id]);
 
   const init = async () => {
-    await initDB();
-    await loadNotebooks();
-    setLoading(false);
+    setLoading(true);
+    setInitializationError(null);
+    try {
+      await initDB();
+      await loadNotebooks();
+      setInitialized(true);
+    } catch (error) {
+      console.error("Failed to initialize database:", error);
+      setInitializationError(
+        error instanceof Error
+          ? error.message
+          : "Die lokale Datenbank konnte nicht geladen werden.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -137,6 +164,16 @@ function App() {
 
   if (loading) return <Splash />;
 
+  if (initializationError) {
+    return (
+      <main className="app-error">
+        <h1>Notary konnte nicht gestartet werden</h1>
+        <p>{initializationError}</p>
+        <button type="button" onClick={init}>Erneut versuchen</button>
+      </main>
+    );
+  }
+
   if (!selectedNote) {
     return (
       <div className="app-container" onContextMenu={(e) => e.preventDefault()}>
@@ -159,7 +196,11 @@ function App() {
           selectedNote={selectedNote}
           setSelectedNote={setSelectedNote}
           init={init}
-          cloudBackup={<BackupPopover onDatabaseChanged={handleDatabaseChanged} />}
+          cloudBackup={
+            <Suspense fallback={null}>
+              <BackupPopover onDatabaseChanged={handleDatabaseChanged} />
+            </Suspense>
+          }
         />
       </div>
     );
@@ -168,23 +209,28 @@ function App() {
   return (
     <div className="editor-wrapper">
       <div className="note-header">
-        <XIcon
-          size={24}
+        <button
+          type="button"
+          className="closeNoteBtn"
+          aria-label="Close note"
           onClick={() => {
             setSelectedNote(null);
             loadNotes(selectedNotebook);
           }}
-          className="closeNoteBtn"
-        />
+        >
+          <XIcon size={24} />
+        </button>
         {selectedNote.name.length > 20
           ? <p>{selectedNote.name.slice(0, 20) + "..."}</p>
           : <p>{selectedNote.name}</p>}
       </div>
 
-      <SimpleEditor
-        note={selectedNote}
-        onUpdate={(content) => handleUpdateNote(selectedNote.id, content)}
-      />
+      <Suspense fallback={<Splash />}>
+        <SimpleEditor
+          note={selectedNote}
+          onUpdate={(content) => handleUpdateNote(selectedNote.id, content)}
+        />
+      </Suspense>
     </div>
   );
 }

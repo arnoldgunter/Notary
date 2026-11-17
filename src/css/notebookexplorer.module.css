@@ -38,6 +38,11 @@
 .toolBarIcon {
     background-color: transparent;
     cursor: pointer;
+    color: inherit;
+    border: 0;
+    display: grid;
+    place-items: center;
+    padding: 0.15rem;
 }
 
 .sortDialog {
@@ -60,16 +65,20 @@
     animation: fadeIn 0.3s ease;
 }
 
-.sortDialog span {
+.sortDialog button {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
     cursor: pointer;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    text-align: left;
 }
 
-.sortDialog span p {
+.sortDialog button p {
     width: 100%;
 }
 
@@ -141,6 +150,10 @@
 .closeIcon {
     background-color: transparent;
     cursor: pointer;
+    color: inherit;
+    border: 0;
+    display: grid;
+    place-items: center;
 }
 
 .overlay {
@@ -360,7 +373,8 @@
     gap: 0.5rem;
 }
 
-.folderContextMenu p {
+.folderContextMenu button,
+.noteContextMenu button {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -368,6 +382,10 @@
     border-radius: 10px;
     cursor: pointer;
     color: #f0f0f0;
+    background: transparent;
+    border: 0;
+    width: 100%;
+    text-align: left;
 }
 
 .noteContextMenu {
@@ -385,16 +403,6 @@
     z-index: 31;
 }
 
-.noteContextMenu p {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 10px;
-    cursor: pointer;
-    color: #f0f0f0;
-}
-
 .newNoteItem {
     width: 100%;
     display: flex;
@@ -405,6 +413,9 @@
     cursor: pointer;
     user-select: none;
     background-color: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
 }
 
 .newNoteContainer {
@@ -458,6 +469,10 @@
     position: relative;
     width: 150px;
     font-size: 1rem;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    font: inherit;
 }
 
 .noteItem img {

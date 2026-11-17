@@ -103,6 +103,17 @@ async function requestAccessToken() {
   });
   if (!response.ok) {
     const details = await response.text();
+    if (
+      response.status === 400 &&
+      details.includes("client_secret is missing")
+    ) {
+      throw new Error(
+        "Diese Google-Client-ID ist ein Web-Client und verlangt ein Client-Secret. " +
+          "Bitte in der Google Cloud Console eine OAuth-Client-ID vom Typ " +
+          "\"Desktop-App\" erstellen und VITE_GOOGLE_CLIENT_ID damit ersetzen. " +
+          "Notary verwendet bewusst kein Client-Secret.",
+      );
+    }
     throw new Error(
       `Google-Token konnte nicht abgerufen werden (${response.status}): ${details}`,
     );
@@ -129,7 +140,7 @@ export async function getGoogleAccount() {
 }
 
 export async function connectGoogleDrive() {
-  await requestAccessToken("select_account");
+  await requestAccessToken();
   const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
